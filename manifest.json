@@ -1,6 +1,6 @@
 {
     "display_name": "Custom Vision Injector",
-    "id": "STtextimage",
+    "id": "custom_vision_injector",
     "name": "Custom Vision Injector",
     "description": "自定义视觉模型端点。自动上传图片、生成描述，并作为提示词注入到聊天输入框中。",
     "author": "AI Assistant",

@@ -1,5 +1,5 @@
 // 核心状态管理 (完全遵循官方扩展开发指南)
-const MODULE_NAME = 'STtextimage';
+const MODULE_NAME = 'custom_vision_injector';
 
 // 默认设置
 const defaultSettings = Object.freeze({
@@ -177,7 +177,7 @@ jQuery(async () => {
         
         // 渲染设置页面 (传入 settings 作为模板数据进行绑定)
         const settingsHtml = await renderExtensionTemplateAsync(
-            'third-party/custom_vision_injector',
+            'custom_vision_injector',
             'settings',
             extensionSettings
         );
