@@ -1,39 +1,46 @@
-import { extension_settings, getContext } from '../../../extensions.js';
-import { saveSettingsDebounced } from '../../../../script.js';
-
-// 插件标识
-const extensionName = 'custom_vision_injector';
-const extensionFolderPath = `scripts/extensions/${extensionName}`;
+// 核心状态管理 (完全遵循官方扩展开发指南)
+const MODULE_NAME = 'STtextimage';
 
 // 默认设置
-const defaultSettings = {
+const defaultSettings = Object.freeze({
     apiUrl: 'http://127.0.0.1:11434/v1/chat/completions',
     apiKey: '',
     modelId: 'llava',
     prompt: 'Please describe this image in detail. Focus on the main subjects and the environment.',
     template: '\n[System Note: The user shared an image. Description: {{caption}}]\n'
-};
+});
 
-// 初始化设置
-async function loadSettings() {
-    if (!extension_settings[extensionName]) {
-        extension_settings[extensionName] = { ...defaultSettings };
-    }
-    const settings = extension_settings[extensionName];
+// 获取并初始化设置
+function getSettings() {
+    // 使用 SillyTavern.getContext() 替代不稳定的直接 import
+    const { extensionSettings } = SillyTavern.getContext();
     
-    $('#cvi_api_url').val(settings.apiUrl);
-    $('#cvi_api_key').val(settings.apiKey);
-    $('#cvi_model_id').val(settings.modelId);
-    $('#cvi_prompt').val(settings.prompt);
-    $('#cvi_template').val(settings.template);
+    if (!extensionSettings[MODULE_NAME]) {
+        extensionSettings[MODULE_NAME] = structuredClone(defaultSettings);
+    }
+    
+    // 确保所有默认键都存在
+    for (const key of Object.keys(defaultSettings)) {
+        if (!Object.hasOwn(extensionSettings[MODULE_NAME], key)) {
+            extensionSettings[MODULE_NAME][key] = defaultSettings[key];
+        }
+    }
+    return extensionSettings[MODULE_NAME];
+}
 
-    // 绑定设置改变事件并保存
+// 绑定 UI 设置变化并持久化
+function bindSettingsUI() {
+    const { saveSettingsDebounced } = SillyTavern.getContext();
+    const settings = getSettings();
+
     $('#cvi_api_url, #cvi_api_key, #cvi_model_id, #cvi_prompt, #cvi_template').on('input', function () {
         settings.apiUrl = $('#cvi_api_url').val();
         settings.apiKey = $('#cvi_api_key').val();
         settings.modelId = $('#cvi_model_id').val();
         settings.prompt = $('#cvi_prompt').val();
         settings.template = $('#cvi_template').val();
+        
+        // 持久化保存设置
         saveSettingsDebounced();
     });
 }
@@ -50,7 +57,7 @@ function getBase64(file) {
 
 // 调用自定义视觉 API (使用标准 OpenAI 多模态格式)
 async function callCustomVisionAPI(base64Image) {
-    const settings = extension_settings[extensionName];
+    const settings = getSettings();
     
     // 构造 OpenAI 格式的 Payload
     const payload = {
@@ -108,7 +115,7 @@ async function processSelectedImage(file) {
         
         if (caption) {
             // 3. 格式化并注入到输入框
-            const settings = extension_settings[extensionName];
+            const settings = getSettings();
             const injectedText = settings.template.replace('{{caption}}', caption.trim());
             
             const textarea = document.getElementById('send_textarea');
@@ -159,15 +166,33 @@ function injectUI() {
     });
 }
 
-// 插件启动入口
+// 插件启动入口 (遵循最新指南建议)
 jQuery(async () => {
-    // 加载设置 HTML
-    const settingsHtml = await $.get(`${extensionFolderPath}/settings.html`);
-    $('#extensions_settings').append(settingsHtml);
+    try {
+        // 使用 getContext 的 renderExtensionTemplateAsync (官方推荐的方法，取代直接操作 HTML)
+        const { renderExtensionTemplateAsync } = SillyTavern.getContext();
+        
+        // 获取配置数据作为 Handlebars 模板的上下文变量
+        const extensionSettings = getSettings();
+        
+        // 渲染设置页面 (传入 settings 作为模板数据进行绑定)
+        const settingsHtml = await renderExtensionTemplateAsync(
+            'third-party/custom_vision_injector',
+            'settings',
+            extensionSettings
+        );
+        
+        // 注入到扩展设置面板
+        $('#extensions_settings').append(settingsHtml);
 
-    // 初始化
-    await loadSettings();
-    injectUI();
-    
-    console.log("[Custom Vision Injector] 插件加载成功。");
+        // 绑定输入框变化与持久化
+        bindSettingsUI();
+        
+        // 注入聊天输入框按钮
+        injectUI();
+        
+        console.log("[Custom Vision Injector] 插件加载成功。");
+    } catch (error) {
+        console.error("[Custom Vision Injector] 插件初始化失败:", error);
+    }
 });
