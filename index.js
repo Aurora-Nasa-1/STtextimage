@@ -47,13 +47,38 @@ function bindSettingsUI() {
     });
 }
 
-// 图片转 Base64
-function getBase64(file) {
+// 图片转 Base64 并压缩大小，防止超出上下文 Token 限制
+function resizeImageAsBase64(file, maxWidth = 1024, maxHeight = 1024) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+
+                // 计算压缩比例
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = width * ratio;
+                    height = height * ratio;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // 输出为 JPEG 以减小体积，质量设定为 0.85
+                resolve(canvas.toDataURL('image/jpeg', 0.85));
+            };
+            img.onerror = error => reject(error);
+            img.src = event.target.result;
+        };
         reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
     });
 }
 
@@ -110,8 +135,8 @@ async function processSelectedImage(file) {
     toastr.info("正在将图片发送至自定义视觉模型处理...");
     
     try {
-        // 1. 转为 Base64
-        const base64Image = await getBase64(file);
+        // 1. 转为 Base64 (加入图片压缩，避免超出 Token 限制)
+        const base64Image = await resizeImageAsBase64(file);
         
         // 2. 调用 API 获取描述
         const caption = await callCustomVisionAPI(base64Image);
