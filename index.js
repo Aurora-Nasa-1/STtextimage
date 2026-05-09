@@ -140,16 +140,20 @@ function injectUI() {
     const fileInputHtml = `<input type="file" id="cvi_file_input" accept="image/*" style="display: none;">`;
     $('body').append(fileInputHtml);
 
-    // 在 ST 的聊天输入框旁边添加一个按钮 (使用 ST 自带的 FontAwesome 图标)
-    // 注入到 #send_controls 容器内
+    // 在 ST 的聊天输入框旁边添加一个按钮
     const buttonHtml = `
-        <div id="cvi_trigger_btn" class="mes_button interactable" title="上传至自定义视觉模型" style="margin-right: 5px;">
+        <div id="cvi_trigger_btn" class="mes_button interactable" title="上传至自定义视觉模型" style="margin-right: 5px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
             <i class="fa-solid fa-eye"></i>
         </div>
     `;
     
-    // 寻找发送按钮容器并插入
-    $('#send_controls').prepend(buttonHtml);
+    // 尝试注入到不同的地方以确保能显示
+    // 优先尝试发送按钮旁边，如果没有发送按钮，则直接加在输入框旁边
+    if ($('#send_but').length > 0) {
+        $('#send_but').before(buttonHtml);
+    } else {
+        $('#send_textarea').after(buttonHtml);
+    }
 
     // 绑定点击事件
     $('#cvi_trigger_btn').on('click', () => {
