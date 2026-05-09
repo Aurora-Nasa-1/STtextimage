@@ -1,5 +1,5 @@
 // 核心状态管理 (完全遵循官方扩展开发指南)
-const MODULE_NAME = 'custom_vision_injector';
+const MODULE_NAME = 'STtextimage';
 
 // 默认设置
 const defaultSettings = Object.freeze({
@@ -176,8 +176,9 @@ jQuery(async () => {
         const extensionSettings = getSettings();
         
         // 渲染设置页面 (传入 settings 作为模板数据进行绑定)
+        // 使用仓库的实际目录名称 'STtextimage' 或者动态获取
         const settingsHtml = await renderExtensionTemplateAsync(
-            'custom_vision_injector',
+            'STtextimage',
             'settings',
             extensionSettings
         );
