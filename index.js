@@ -176,9 +176,9 @@ jQuery(async () => {
         const extensionSettings = getSettings();
         
         // 渲染设置页面 (传入 settings 作为模板数据进行绑定)
-        // 使用仓库的实际目录名称 'STtextimage' 或者动态获取
+        // 使用仓库的实际目录名称 'third-party/STtextimage'
         const settingsHtml = await renderExtensionTemplateAsync(
-            'STtextimage',
+            'third-party/STtextimage',
             'settings',
             extensionSettings
         );
