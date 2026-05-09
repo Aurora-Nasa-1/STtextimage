@@ -1,3 +1,5 @@
+import { eventSource, event_types } from '../../../../script.js';
+
 // 核心状态管理 (完全遵循官方扩展开发指南)
 const MODULE_NAME = 'STtextimage';
 
@@ -169,14 +171,13 @@ function injectUI() {
 // 插件启动入口 (遵循最新指南建议)
 jQuery(async () => {
     try {
-        // 使用 getContext 的 renderExtensionTemplateAsync (官方推荐的方法，取代直接操作 HTML)
+        // 使用 getContext 的 renderExtensionTemplateAsync
         const { renderExtensionTemplateAsync } = SillyTavern.getContext();
         
         // 获取配置数据作为 Handlebars 模板的上下文变量
         const extensionSettings = getSettings();
         
-        // 渲染设置页面 (传入 settings 作为模板数据进行绑定)
-        // 使用仓库的实际目录名称 'third-party/STtextimage'
+        // 渲染设置页面
         const settingsHtml = await renderExtensionTemplateAsync(
             'third-party/STtextimage',
             'settings',
@@ -189,8 +190,10 @@ jQuery(async () => {
         // 绑定输入框变化与持久化
         bindSettingsUI();
         
-        // 注入聊天输入框按钮
-        injectUI();
+        // 等待整个应用 UI 构建完成后，再注入聊天框按钮
+        eventSource.on(event_types.APP_READY, () => {
+            injectUI();
+        });
         
         console.log("[Custom Vision Injector] 插件加载成功。");
     } catch (error) {
