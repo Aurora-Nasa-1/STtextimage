@@ -91,7 +91,8 @@ async function callCustomVisionAPI(base64Image) {
         });
 
         if (!response.ok) {
-            throw new Error(`API 请求失败: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`API 请求失败: ${response.status} ${response.statusText} - 详情: ${errorText}`);
         }
 
         const data = await response.json();
