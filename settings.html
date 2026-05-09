@@ -1,0 +1,18 @@
+<div class="custom-vision-settings">
+    <h4>Custom Vision Injector 设置</h4>
+
+    <label for="cvi_api_url">API 端点 (Endpoint URL):</label>
+    <input id="cvi_api_url" class="text_pole" type="text" placeholder="例如: http://127.0.0.1:11434/v1/chat/completi>
+
+    <label for="cvi_api_key">API Key (如果有):</label>
+    <input id="cvi_api_key" class="text_pole" type="password" placeholder="sk-..." />
+
+    <label for="cvi_model_id">模型名称 (Model ID):</label>
+    <input id="cvi_model_id" class="text_pole" type="text" placeholder="例如: llava, qwen-vl" />
+
+    <label for="cvi_prompt">给视觉模型的提示词 (Prompt):</label>
+    <textarea id="cvi_prompt" class="text_pole" rows="2">Please describe this image in detail. Focus on the main sub>
+
+    <label for="cvi_template">注入格式模板 (用 {{caption}} 代表生成的描述):</label>
+    <textarea id="cvi_template" class="text_pole" rows="2">\n[System Note: The user shared an image. Description: {{>
+</div>
